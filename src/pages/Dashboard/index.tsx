@@ -1,92 +1,67 @@
-import React from 'react';
-
+import React, { useState, FormEvent } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
+import api from '../../services/api';
 
 import logoImg from '../../assets/logo.svg';
 
 import { Title, Form, Resositories } from './styles';
 
-const Dashboard: React.FC = () => (
-  <>
-    <img src={logoImg} alt="Github Explorer" />
-    <Title>Explore repositórios no Github</Title>
+interface Repository {
+  full_name: string;
+  description: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
 
-    <Form>
-      <input placeholder="Digite o nome do repositório" />
-      <button type="submit">Pesquisar</button>
-    </Form>
+const Dashboard: React.FC = () => {
+  const [newRepo, setNewRepo] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>([]);
 
-    <Resositories>
-      <a href="teste">
-        <img
-          src="https://cdn.iconscout.com/icon/free/png-256/avatar-372-456324.png"
-          alt="Fulano"
-        />
-        <div>
-          <strong>rocketseat/unform</strong>
-          <p>Easy peasy highly scalable ReactJS & React Native forms!</p>
-        </div>
-        <FiChevronRight size={20} />
-      </a>
+  async function handleAddRepository(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    event.preventDefault();
 
-      {/* REAPEATED */}
-      <a href="teste">
-        <img
-          src="https://cdn.iconscout.com/icon/free/png-256/avatar-372-456324.png"
-          alt="Fulano"
+    const response = await api.get<Repository>(`repos/${newRepo}`);
+
+    const repository = response.data;
+
+    setRepositories([...repositories, repository]);
+    setNewRepo('');
+  }
+
+  return (
+    <>
+      <img src={logoImg} alt="Github Explorer" />
+      <Title>Explore repositórios no Github</Title>
+
+      <Form onSubmit={handleAddRepository}>
+        <input
+          value={newRepo}
+          onChange={(e) => setNewRepo(e.target.value)}
+          placeholder="Digite o nome do repositório"
         />
-        <div>
-          <strong>rocketseat/unform</strong>
-          <p>Easy peasy highly scalable ReactJS & React Native forms!</p>
-        </div>
-        <FiChevronRight size={20} />
-      </a>
-      <a href="teste">
-        <img
-          src="https://cdn.iconscout.com/icon/free/png-256/avatar-372-456324.png"
-          alt="Fulano"
-        />
-        <div>
-          <strong>rocketseat/unform</strong>
-          <p>Easy peasy highly scalable ReactJS & React Native forms!</p>
-        </div>
-        <FiChevronRight size={20} />
-      </a>
-      <a href="teste">
-        <img
-          src="https://cdn.iconscout.com/icon/free/png-256/avatar-372-456324.png"
-          alt="Fulano"
-        />
-        <div>
-          <strong>rocketseat/unform</strong>
-          <p>Easy peasy highly scalable ReactJS & React Native forms!</p>
-        </div>
-        <FiChevronRight size={20} />
-      </a>
-      <a href="teste">
-        <img
-          src="https://cdn.iconscout.com/icon/free/png-256/avatar-372-456324.png"
-          alt="Fulano"
-        />
-        <div>
-          <strong>rocketseat/unform</strong>
-          <p>Easy peasy highly scalable ReactJS & React Native forms!</p>
-        </div>
-        <FiChevronRight size={20} />
-      </a>
-      <a href="teste">
-        <img
-          src="https://cdn.iconscout.com/icon/free/png-256/avatar-372-456324.png"
-          alt="Fulano"
-        />
-        <div>
-          <strong>rocketseat/unform</strong>
-          <p>Easy peasy highly scalable ReactJS & React Native forms!</p>
-        </div>
-        <FiChevronRight size={20} />
-      </a>
-      {/*  */}
-    </Resositories>
-  </>
-);
+        <button type="submit">Pesquisar</button>
+      </Form>
+
+      <Resositories>
+        {repositories.map((repository) => (
+          <a key={repository.full_name} href="teste">
+            <img
+              src={repository.owner.avatar_url}
+              alt={repository.owner.login}
+            />
+            <div>
+              <strong>{repository.full_name}</strong>
+              <p>{repository.description}</p>
+            </div>
+            <FiChevronRight size={20} />
+          </a>
+        ))}
+      </Resositories>
+    </>
+  );
+};
 export default Dashboard;
